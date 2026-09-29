@@ -23,6 +23,7 @@ with try_import() as imports_successful:
     from pydantic_ai.models import ModelRequestParameters
     from pydantic_ai.models.openai import OpenAIResponsesModel
     from pydantic_ai.native_tools import ImageGenerationTool
+    from pydantic_ai.native_tools._tool_search import ToolSearchTool
     from pydantic_ai.profiles.openai import (
         OpenAIJsonSchemaTransformer,
         OpenAIModelProfile,
@@ -143,8 +144,15 @@ REASONING_CASES = [
         supports_minimal_reasoning_effort=False,
         supports_context=True,
     ),
-    ReasoningCase(model='gpt-6.1-sol', enabled_by_default=True, supports_minimal_reasoning_effort=False),
-    ReasoningCase(model='gpt-6.1-sol-2026-09-29', enabled_by_default=True, supports_minimal_reasoning_effort=False),
+    ReasoningCase(
+        model='gpt-6.1-sol', enabled_by_default=True, supports_minimal_reasoning_effort=False, supports_context=True
+    ),
+    ReasoningCase(
+        model='gpt-6.1-sol-2026-09-29',
+        enabled_by_default=True,
+        supports_minimal_reasoning_effort=False,
+        supports_context=True,
+    ),
     ReasoningCase(
         model='gpt-6-luna',
         enabled_by_default=True,
@@ -219,6 +227,9 @@ def test_gpt_6_1_sol_prepares_image_tool_request(model_name: str):
     )
     assert params.allow_image_output is True
     assert model.profile.get('openai_supports_encrypted_reasoning_content') is True
+    assert ToolSearchTool in model.profile.get('supported_native_tools', frozenset())
+    assert model.profile.get('openai_supports_prompt_cache_breakpoints') is True
+    assert model.profile.get('openai_supports_phase') is True
 
 
 def test_unrecognized_model_still_rejects_image_output():

@@ -99,12 +99,14 @@ _ALWAYS_ON_REASONING = _ReasoningSupport(
 )
 """The model always reasons; it doesn't accept `reasoning_effort='none'`."""
 
-_GPT_6_MODEL_PREFIXES = ('gpt-6-astra', 'gpt-6-sol', 'gpt-6-luna')
+_GPT_6_MODEL_PREFIXES = ('gpt-6.1-sol', 'gpt-6-astra', 'gpt-6-sol', 'gpt-6-luna')
 
 _REASONING_SUPPORT_BY_PREFIX: dict[str, _ReasoningSupport] = {
     # GPT-6.1 Sol always reasons and does not accept `none` or `minimal` effort.
     # https://developers.openai.com/api/docs/models/gpt-6.1-sol
-    'gpt-6.1-sol': _ALWAYS_ON_REASONING,
+    'gpt-6.1-sol': _ReasoningSupport(
+        enabled_by_default=True, can_be_disabled=False, supports_mode=False, supports_context=True
+    ),
     # GPT-6 Astra reasons by default and does not accept `effort='none'` (its guide migrates
     # `none`/`minimal` users to `low`); it carries over GPT-5.6's `reasoning.mode` and
     # `reasoning.context='all_turns'` per https://developers.openai.com/api/docs/models/gpt-6-astra.
@@ -473,9 +475,7 @@ def openai_model_profile(model_name: str) -> ModelProfile:
         openai_responses_supports_reasoning_context=reasoning.supports_context,
         openai_supports_phase=supports_phase,
         openai_supports_prompt_cache_breakpoints=supports_prompt_cache_breakpoints,
-        openai_supports_minimal_reasoning_effort=not model_name.startswith(
-            ('gpt-5.6', 'gpt-6.1-sol', *_GPT_6_MODEL_PREFIXES)
-        ),
+        openai_supports_minimal_reasoning_effort=not model_name.startswith(('gpt-5.6', *_GPT_6_MODEL_PREFIXES)),
         supported_native_tools=supported_native_tools,
     )
 
